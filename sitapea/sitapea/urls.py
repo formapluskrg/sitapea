@@ -21,10 +21,8 @@ from main.views import CheckInView, IndexView, ReportDownloadView
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^checkin/(?P<code>\d*)/(?P<action>arrival|leaving)/$', CheckInView.as_view(), name='checkin-view'),
-    url(r'^report/(?P<date_from>([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]))/$',
-        ReportDownloadView.as_view(), name='report-download-view'),
-    url(r'^report/(?P<date_from>([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])).*'
-        r'/(?P<date_to>([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])).*/$',
+    url(r'^report/(?P<date_from>([0-9]{4})-(0[1-9]|1[0-2])-([1-9]|0[1-9]|[1-2][0-9]|3[0-1])).*'
+        r'/(?P<date_to>([0-9]{4})-(0[1-9]|1[0-2])-([1-9]|0[1-9]|[1-2][0-9]|3[0-1])).*/$',
         ReportDownloadView.as_view(), name='report-range-download-view'),
     url(r'^$', IndexView.as_view(), name='index-view'),
 ]
