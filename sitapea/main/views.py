@@ -50,8 +50,9 @@ class ReportDownloadView(View):
             'Отдел',
             'Приход',
             'Уход',
-            'Комментарий',
             'Отработано минут',
+            'Отработано часов:минут',
+            'Комментарий',
             'Обеды',
             'Перерывы',
             'Чистая разница',
@@ -63,8 +64,8 @@ class ReportDownloadView(View):
         ws.column_dimensions['D'].width = 20
         ws.column_dimensions['E'].width = 20
         ws.column_dimensions['F'].width = 20
-        ws.column_dimensions['G'].width = 60
-        ws.column_dimensions.group('I', 'K', hidden=True)
+        ws.column_dimensions['I'].width = 60
+        ws.column_dimensions.group('J', 'L', hidden=True)
         qs = CheckIn.objects\
             .annotate(arrival_or_leaving=Coalesce('arrival_timestamp', 'leaving_timestamp'))\
             .order_by('employee__surname', 'employee__name', 'arrival_or_leaving')\
@@ -82,8 +83,9 @@ class ReportDownloadView(View):
                 checkin.employee.department.acronym,
                 localtime(checkin.arrival_timestamp).replace(tzinfo=None) if checkin.arrival_timestamp else None,
                 localtime(checkin.leaving_timestamp).replace(tzinfo=None) if checkin.leaving_timestamp else None,
-                checkin.comment,
                 checkin.workday_duration,
+                checkin.workday_duration_in_hhmm,
+                checkin.comment,
                 checkin.dinners_duration,
                 checkin.coffee_duration,
                 checkin.workday_duration_raw,

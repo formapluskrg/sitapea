@@ -100,3 +100,10 @@ class CheckIn(models.Model):
         raw = self.workday_duration_raw
         if raw:
             return raw - self.dinners_duration - self.coffee_duration
+
+    @property
+    def workday_duration_in_hhmm(self):
+        if self.workday_duration:
+            hours = self.workday_duration // 60
+            minutes = self.workday_duration % 60
+            return "%d:%02d" % (hours, minutes)
