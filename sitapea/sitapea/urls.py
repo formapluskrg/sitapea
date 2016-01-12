@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from main.views import CheckInView, IndexView, ReportDownloadView
+from main.views import CheckInView, IndexView, ReportDownloadView, SummaryReportView
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
@@ -24,5 +24,8 @@ urlpatterns = [
     url(r'^report/(?P<date_from>([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]|[1-9])).*'
         r'/(?P<date_to>([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]|[1-9])).*/$',
         ReportDownloadView.as_view(), name='report-range-download-view'),
+    url(r'^summaryreport/(?P<date_from>([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]|[1-9])).*'
+        r'/(?P<date_to>([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]|[1-9])).*/$',
+        SummaryReportView.as_view(), name='summary-report-download-view'),
     url(r'^$', IndexView.as_view(), name='index-view'),
 ]

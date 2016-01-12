@@ -1,7 +1,4 @@
-import datetime
-
 from django.db.models.functions import Coalesce
-from django.utils import timezone
 from django.utils.timezone import localtime
 from django.http import JsonResponse, HttpResponse
 from django.views.generic import TemplateView, View
@@ -71,7 +68,8 @@ class ReportDownloadView(View):
             .order_by('employee__surname', 'employee__name', 'arrival_or_leaving')\
             .select_related('employee', 'employee__department')
         if date_to:
-            qs = qs.filter(arrival_or_leaving__date__range=[date_from, date_to, ])
+            qs = qs.filter(arrival_or_leaving__date__gte=date_from)
+            qs = qs.filter(arrival_or_leaving__date__lt=date_to)
         else:
             qs = qs.filter(arrival_or_leaving__date=date_from)
 
@@ -94,6 +92,47 @@ class ReportDownloadView(View):
 
         response = HttpResponse(content_type="application/ms-excel")
         filename = 'sitapea_report_{}{}.xlsx'.format(date_from, '_'+date_to if date_to else '')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+        wb.save(response)
+        return response
+
+
+class SummaryReportView(View):
+    def get(self, request, date_from, date_to):
+
+        wb = Workbook()
+        ws = wb.active
+
+        ws.append(('Суммарный отчёт за период', date_from, date_to))
+        titles = (
+            'Фамилия',
+            'Имя',
+            'Отчество',
+            'Отдел',
+            'Отработано часов:минут',
+        )
+        ws.append(titles)
+        ws.column_dimensions['A'].width = 30
+        ws.column_dimensions['B'].width = 20
+        ws.column_dimensions['C'].width = 20
+        ws.column_dimensions['D'].width = 20
+        qs = Employee.objects\
+            .order_by('surname', 'name')\
+            .select_related('department')
+
+        for employee in qs:
+            working_hours_summary = employee.working_hours_summary_in_date_range(date_from, date_to)
+            row = (
+                employee.surname,
+                employee.name,
+                employee.patronym,
+                employee.department.acronym,
+                working_hours_summary,
+            )
+            ws.append(row)
+
+        response = HttpResponse(content_type="application/ms-excel")
+        filename = 'sitapea_summary_report_{}{}.xlsx'.format(date_from, '_'+date_to if date_to else '')
         response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
         wb.save(response)
         return response

@@ -29,7 +29,7 @@ class CheckInAdmin(admin.ModelAdmin):
                     'arrival_timestamp_with_custom_sort', 'leaving_timestamp',
                     'workday_duration_raw', 'dinners_duration', 'coffee_duration', 'workday_duration',
                     'comment', )
-    list_filter = ('employee__surname', )
+    list_filter = ('employee', )
 
     def get_queryset(self, request):
         qs = super(CheckInAdmin, self).get_queryset(request)

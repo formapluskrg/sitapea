@@ -3,6 +3,8 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 import datetime
 
+from main.helpers import minutes_to_hhmm
+
 WORKDAY_MAX_DURATION = datetime.timedelta(minutes=26*60)
 
 
@@ -57,6 +59,17 @@ class Employee(models.Model):
         if not arrival.arrival_timestamp:
             raise ValueError('forgot_to_arrive')
 
+    def working_hours_summary_in_date_range(self, date_from, date_to):
+        checkin_set = self.checkin_set\
+            .annotate(arrival_or_leaving=Coalesce('arrival_timestamp', 'leaving_timestamp'))\
+            .filter(arrival_timestamp__date__gte=date_from)\
+            .filter(leaving_timestamp__date__lt=date_to)
+        result = 0
+        for checkin in checkin_set:
+            result += checkin.workday_duration if checkin.workday_duration else 0
+        result = minutes_to_hhmm(result)
+        return result
+
 
 class CheckIn(models.Model):
     class Meta:
@@ -100,10 +113,9 @@ class CheckIn(models.Model):
         raw = self.workday_duration_raw
         if raw:
             return raw - self.dinners_duration - self.coffee_duration
+        return 0
 
     @property
     def workday_duration_in_hhmm(self):
         if self.workday_duration:
-            hours = self.workday_duration // 60
-            minutes = self.workday_duration % 60
-            return "%d:%02d" % (hours, minutes)
+            return minutes_to_hhmm(self.workday_duration)
