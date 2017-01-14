@@ -27,8 +27,8 @@ class EmployeeAdmin(admin.ModelAdmin):
 class CheckInAdmin(admin.ModelAdmin):
     list_display = ('employee', 'department',
                     'arrival_timestamp_with_custom_sort', 'leaving_timestamp',
-                    'workday_duration_raw', 'dinners_duration', 'coffee_duration', 'workday_duration',
-                    'comment', )
+                    'workday_duration_raw', 'dinners_duration', 'coffee_duration',
+                    'night_shift_bonus', 'workday_duration', 'comment', )
     list_filter = ('employee', )
 
     def get_queryset(self, request):

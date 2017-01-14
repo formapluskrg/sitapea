@@ -41,18 +41,19 @@ class ReportDownloadView(View):
 
         ws.append(('Отчёт за период', date_from, date_to))
         titles = (
-            'Фамилия',
-            'Имя',
-            'Отчество',
-            'Отдел',
-            'Приход',
-            'Уход',
-            'Отработано минут',
-            'Отработано часов:минут',
-            'Комментарий',
-            'Обеды',
-            'Перерывы',
-            'Чистая разница',
+            'Фамилия',  # A
+            'Имя',  # B
+            'Отчество',  # C
+            'Отдел',  # D
+            'Приход',  # E
+            'Уход',  # F
+            'Отработано минут',  # G
+            'Отработано часов:минут',  # H
+            'Комментарий',  # I
+            'Обеды',  # J
+            'Перерывы',  # K
+            'Бонус за ночную смену',  # L
+            'Чистая разница',  # M
         )
         ws.append(titles)
         ws.column_dimensions['A'].width = 30
@@ -62,7 +63,7 @@ class ReportDownloadView(View):
         ws.column_dimensions['E'].width = 20
         ws.column_dimensions['F'].width = 20
         ws.column_dimensions['I'].width = 60
-        ws.column_dimensions.group('J', 'L', hidden=True)
+        ws.column_dimensions.group('J', 'M', hidden=True)
         qs = CheckIn.objects\
             .annotate(arrival_or_leaving=Coalesce('arrival_timestamp', 'leaving_timestamp'))\
             .order_by('employee__surname', 'employee__name', 'arrival_or_leaving')\
@@ -86,6 +87,7 @@ class ReportDownloadView(View):
                 checkin.comment,
                 checkin.dinners_duration,
                 checkin.coffee_duration,
+                checkin.night_shift_bonus,
                 checkin.workday_duration_raw,
             )
             ws.append(row)

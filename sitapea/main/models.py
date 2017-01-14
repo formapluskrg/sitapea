@@ -1,9 +1,11 @@
+import datetime
+
 from django.db import models
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-import datetime
 
-from main.helpers import minutes_to_hhmm
+from main.helpers import (minutes_to_hhmm, Range, morning_shift, evening_shift,
+                          get_each_day_in_range, get_overlap_of_ranges)
 
 WORKDAY_MAX_DURATION = datetime.timedelta(minutes=26*60)
 
@@ -87,6 +89,11 @@ class CheckIn(models.Model):
         )
 
     @property
+    def working_time_range(self):
+        return Range(start=timezone.localtime(self.arrival_timestamp),
+                     end=timezone.localtime(self.leaving_timestamp))
+
+    @property
     def workday_duration_raw(self):
         if self.leaving_timestamp and self.arrival_timestamp:
             worktime_timedelta = self.leaving_timestamp - self.arrival_timestamp
@@ -109,10 +116,24 @@ class CheckIn(models.Model):
             return coffee_breaks_count * 15
 
     @property
+    def night_shift_minutes(self):
+        result = 0
+        if self.workday_duration_raw and self.arrival_timestamp > timezone.make_aware(datetime.datetime(2017, 1, 1)):
+            for day in get_each_day_in_range(self.working_time_range):
+                assert day.start.day == day.end.day
+                result += get_overlap_of_ranges(day, morning_shift(day.start.date()))
+                result += get_overlap_of_ranges(day, evening_shift(day.start.date()))
+        return result
+
+    @property
+    def night_shift_bonus(self):
+        return int(self.night_shift_minutes * 0.5)
+
+    @property
     def workday_duration(self):
         raw = self.workday_duration_raw
         if raw:
-            return raw - self.dinners_duration - self.coffee_duration
+            return raw - self.dinners_duration - self.coffee_duration + self.night_shift_bonus
         return 0
 
     @property
