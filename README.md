@@ -4,17 +4,17 @@ Pretty simple application for accounting employee's daily attendance. Written in
 
 ## Usage
 
-Application supposed to be run in kiosk-mode browser on device with touchscreen. Employee types his own unique code and this way created a record in database.
+Application supposed to be run in kiosk-mode browser on device with touchscreen. Employee types his own unique code and this way creates an attendance record in database.
 
 
 ## Deployment
 
-Deploy it with any WSGI-compatible server. I personally prefer nginx + gunicorn.
+Deploy it with any WSGI-compatible server. I personally prefer nginx + uwsgi.
 
 
 ## License
 
-I've not decided yet. Please, feel free to ask me.
+[DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE](LICENSE)
 
 ## Screenshot
 
