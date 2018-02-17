@@ -62,7 +62,7 @@ class Employee(models.Model):
         if not arrival.arrival_timestamp:
             raise ValueError('forgot_to_arrive')
 
-    def working_hours_summary_in_date_range_with_nights(self, date_from, date_to):
+    def working_hours_summary_in_date_range(self, date_from, date_to):
         checkin_set = self.checkin_set\
             .annotate(arrival_or_leaving=Coalesce('arrival_timestamp', 'leaving_timestamp'))\
             .filter(arrival_timestamp__date__gte=date_from)\
@@ -72,17 +72,6 @@ class Employee(models.Model):
             .filter(arrival_timestamp__date__lt=date_to)\
             .filter(leaving_timestamp__date__gte=date_to)
         checkin_set = list(chain(checkin_set, last_nights_checkin_set))
-        result = 0
-        for checkin in checkin_set:
-            result += checkin.workday_duration if checkin.workday_duration else 0
-        result = minutes_to_hhmm(result)
-        return result
-
-    def working_hours_summary_in_date_range(self, date_from, date_to):
-        checkin_set = self.checkin_set\
-            .annotate(arrival_or_leaving=Coalesce('arrival_timestamp', 'leaving_timestamp'))\
-            .filter(arrival_timestamp__date__gte=date_from)\
-            .filter(leaving_timestamp__date__lt=date_to)
         result = 0
         for checkin in checkin_set:
             result += checkin.workday_duration if checkin.workday_duration else 0
