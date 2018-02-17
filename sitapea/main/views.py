@@ -139,3 +139,42 @@ class SummaryReportView(View):
         wb.save(response)
         return response
 
+class SummaryNewReportView(View):
+    def get(self, request, date_from, date_to):
+
+        wb = Workbook()
+        ws = wb.active
+
+        ws.append(('Новый суммарный отчёт за период', date_from, date_to))
+        titles = (
+            'Фамилия',
+            'Имя',
+            'Отчество',
+            'Отдел',
+            'Отработано часов:минут',
+        )
+        ws.append(titles)
+        ws.column_dimensions['A'].width = 30
+        ws.column_dimensions['B'].width = 20
+        ws.column_dimensions['C'].width = 20
+        ws.column_dimensions['D'].width = 20
+        qs = Employee.objects\
+            .order_by('surname', 'name')\
+            .select_related('department')
+
+        for employee in qs:
+            working_hours_summary = employee.working_hours_summary_in_date_range_with_nights(date_from, date_to)
+            row = (
+                employee.surname,
+                employee.name,
+                employee.patronym,
+                employee.department.acronym,
+                working_hours_summary,
+            )
+            ws.append(row)
+
+        response = HttpResponse(content_type="application/ms-excel")
+        filename = 'sitapea_new_summary_report_{}{}.xlsx'.format(date_from, '_'+date_to if date_to else '')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+        wb.save(response)
+        return response

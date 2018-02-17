@@ -90,6 +90,7 @@
             {% if request.GET.arrival_timestamp__gte and request.GET.arrival_timestamp__lt %}
                 <div><a href="{% url 'report-range-download-view' date_from=request.GET.arrival_timestamp__gte date_to=request.GET.arrival_timestamp__lt %}">Скачать отчёт (.xlsx)</a></div>
                 <div><a href="{% url 'summary-report-download-view' date_from=request.GET.arrival_timestamp__gte date_to=request.GET.arrival_timestamp__lt %}">Скачать суммарный отчёт (.xlsx)</a></div>
+                <div><a href="{% url 'summary-new-report-download-view' date_from=request.GET.arrival_timestamp__gte date_to=request.GET.arrival_timestamp__lt %}">Скачать суммарный отчёт (тестовый) (.xlsx)</a></div>
             {% else %}
                 <div><s>Скачать отчёт (.xlsx)</s> [Укажите дату]</div>
             {% endif %}
