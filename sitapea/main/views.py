@@ -99,7 +99,18 @@ class ReportDownloadView(View):
         return response
 
 
-class SummaryReportView(View):
+class ReportView(View):
+    report_name = 'sitepea_report'
+
+    def employee_time(self, employee, date_from, date_to):
+        return employee.working_hours_summary_in_date_range(date_from, date_to)
+
+    def name(self, date_from, date_to):
+        return '{}_{}{}.xlsx'.format(self.report_name, date_from, '_'+date_to if date_to else '')
+
+
+class SummaryReportView(ReportView):
+    report_name = 'sitapea_summary_report'
     def get(self, request, date_from, date_to):
 
         wb = Workbook()
@@ -123,7 +134,7 @@ class SummaryReportView(View):
             .select_related('department')
 
         for employee in qs:
-            working_hours_summary = employee.working_hours_summary_in_date_range(date_from, date_to)
+            working_hours_summary = self.employee_time(employee, date_from, date_to)
             row = (
                 employee.surname,
                 employee.name,
@@ -134,7 +145,15 @@ class SummaryReportView(View):
             ws.append(row)
 
         response = HttpResponse(content_type="application/ms-excel")
-        filename = 'sitapea_summary_report_{}{}.xlsx'.format(date_from, '_'+date_to if date_to else '')
+        filename = self.name(date_from, date_to)
         response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
         wb.save(response)
         return response
+
+
+class ReportWONightShiftView(SummaryReportView):
+    report_name = 'sitapea_report_wo_night_shift'
+
+    def employee_time(self, employee, date_from, date_to):
+        return employee.working_hours_wo_night_shift_in_date_range(date_from, date_to)
+
