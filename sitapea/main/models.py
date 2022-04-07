@@ -118,8 +118,29 @@ class CheckIn(models.Model):
     @property
     def workday_duration_raw(self):
         if self.leaving_timestamp and self.arrival_timestamp:
-            worktime_timedelta = self.leaving_timestamp - self.arrival_timestamp
-            return int(worktime_timedelta.total_seconds() // 60)
+            arrival_timestamp = timezone.localtime(self.arrival_timestamp)
+            leaving_timestamp = timezone.localtime(self.leaving_timestamp)
+            if leaving_timestamp.date() == arrival_timestamp.date():
+                worktime_timedelta = leaving_timestamp - arrival_timestamp
+                coef = 1.5 if arrival_timestamp.weekday() >= 5 else 1
+                return int(worktime_timedelta.total_seconds() // 60 * coef)
+            else:
+                total = 0
+                next_date = arrival_timestamp.date()
+                next_timestamp = timezone.make_aware(datetime.datetime(year=next_date.year, month=next_date.month, day=next_date.day))
+                next_timestamp += datetime.timedelta(days=1)
+                coef = 1.5 if arrival_timestamp.weekday() >= 5 else 1
+                total += (next_timestamp - arrival_timestamp).total_seconds() // 60 * coef
+                start_date = leaving_timestamp.date()
+                start_timestamp = timezone.make_aware(datetime.datetime(year=start_date.year, month=start_date.month, day=start_date.day))
+                coef = 1.5 if leaving_timestamp.weekday() >= 5 else 1
+                total += (leaving_timestamp - start_timestamp).total_seconds() // 60 * coef
+                i = arrival_timestamp.date() + datetime.timedelta(days=1)
+                while i < leaving_timestamp.date():
+                    coef = 1.5 if i.weekday() >= 5 else 1
+                    total += 1440 * coef
+                    i += datetime.timedelta(days=1)
+                return int(total)
 
     @property
     def dinners_duration(self):
